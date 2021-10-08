@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-    "strings"
+	"strings"
 
 	"github.com/GoogleCloudPlatform/cloud-build-notifiers/lib/notifiers"
 	log "github.com/golang/glog"
@@ -36,7 +36,7 @@ type teamsNotifier struct {
 	url    string
 }
 
-func (h *teamsNotifier) SetUp(_ context.Context, cfg *notifiers.Config, _ notifiers.SecretGetter) error {
+func (h *teamsNotifier) SetUp(_ context.Context, cfg *notifiers.Config, _ notifiers.SecretGetter, _ notifiers.BindingResolver) error {
 	prd, err := notifiers.MakeCELPredicate(cfg.Spec.Notification.Filter)
 	if err != nil {
 		return fmt.Errorf("failed to create CELPredicate: %w", err)
@@ -70,12 +70,22 @@ func (h *teamsNotifier) SendNotification(ctx context.Context, build *cbpb.Build)
 		clr = "FF8C00"
 	}
 
-	jsonTemplate := []byte(`
+	title := fmt.Sprintf("Cloud Build (%s, %s)", build.ProjectId, build.Substitutions["TRIGGER_NAME"])
+	jsonTemplate := `
 	{
 		"@context": "https://schema.org/extensions",
 		"@type": "MessageCard",
 		"themeColor": "%s",
-		"text": "Cloud Build (%s, %s): %s",
+		"summary": "%s",
+    "sections": [{
+        "activityTitle": "%s",
+        "activitySubtitle": "%s",
+        "facts": [{ 
+					"name": "Status",
+          "value": "%s"
+        }],
+        "markdown": true
+    }],
 		"potentialAction": [
 			{
 				"@type": "OpenUri",
@@ -86,12 +96,13 @@ func (h *teamsNotifier) SendNotification(ctx context.Context, build *cbpb.Build)
 				]
 			}
 		]
-	}`)
+	}`
 
 	jsonTxt := fmt.Sprintf(
-		string(jsonTemplate),
+		jsonTemplate,
 		clr,
-		build.ProjectId,
+		title,
+		title,
 		build.Id,
 		build.Status,
 		build.LogUrl,

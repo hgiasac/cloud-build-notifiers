@@ -25,12 +25,9 @@ There are currently 4 supported notifier types:
     another HTTP endpoint.
 -   [`slack`](./slack/README.md), which uses a Slack webhook to post a message
     in a Slack channel.
-<<<<<<< HEAD
 -   [`smtp`](./smtp/README.md), which sends emails via an SMTP server.
-=======
 -   [`teams`](./teams/README.md), which uses a Microsoft Teams webhook to post a message
     in a Teams channel.
->>>>>>> teams/master
 
 **See the official documentation on Google Cloud for how to configure each notifier:**
 
